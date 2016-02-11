@@ -54,48 +54,25 @@ var vel = new ROSLIB.Topic({
         messageType : 'geometry_msgs/Twist'
 });
 
-function pubMotorValues(){
-        fw = $('#vel_fw').html();
-        rot = $('#vel_rot').html();
+function loadScript(url){
+	var script = document.createElement('script');
+	script.type = 'text/javascript';	
+	script.src = url;
+};
+loadScript('virtualjoystick.js');
 
+function pubMotorValues(){
+        fw  = -(joystick.deltaY());
+      	rot = -(joystick.deltaX());
         fw = parseInt(fw)*0.001;
-        rot = 3.141592*parseInt(rot)/180;
+	if(fw>=0){
+        	rot = 3.1415*parseInt(rot)/180;
+	}else{
+		rot = -3.1415*parseInt(rot)/180;
+	}
         v = new ROSLIB.Message({linear:{x:fw,y:0,z:0}, angular:{x:0,y:0,z:rot}});
         vel.publish(v);
 }
-
-enchant();
-window.onload = function() {
-    //var game = new Game(320, 320);
-    //game.fps = 30;
-    //game.rootScene.backgroundColor = "#fff";
-    game.onload = function() {
-        // 仮想パッドオブジェクトの生成
-        var pad = new Pad();
-        // pad.xとpad.yでも表示させる位置を変更できるが、
-        // 両方指定する場合はmoveToメソッドの方が楽
-        // パッドの画像サイズが100x100pxで、左下に表示したい場合は次のようになる
-        pad.moveTo(0, game.rootScene.height - 100);
-        game.rootScene.addChild(pad);
-        game.rootScene.addEventListener('enterframe', function() {
-            if (game.input.up) {
-                y=-10;
-            }
-            if (game.input.down) {
-                y=10;
-            }
-            if (game.input.right) {
-                x=10;
-            }
-            if (game.input.left) {
-                x=-10;
-            }
-        });
-    $('#vel_fw').html(parseInt(y));
-    $('#vel_rot').html(parseInt(x));
-    };
-    game.start();
-});
 
 setInterval(pubMotorValues,100);
 
